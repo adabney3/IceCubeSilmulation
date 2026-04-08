@@ -1,6 +1,5 @@
 import numpy as np
 
-# --- Detector geometry ---
 n_strings = 8
 doms_per_string = 60
 string_positions = [(x, y) for x in np.linspace(-500, 500, n_strings//2)
@@ -8,15 +7,13 @@ string_positions = [(x, y) for x in np.linspace(-500, 500, n_strings//2)
 dom_depth = np.linspace(-500, 0, doms_per_string)  # meters below surface
 dom_positions = [(x, y, z) for (x, y) in string_positions for z in dom_depth]
 
-# --- Ice properties ---
 n_ice = 1.31
-c = 3e8  # m/s
+c = 3e8
 c_ice = c / n_ice
-theta_c = np.arccos(1 / n_ice)  # ~40.2 degrees
-lambda_abs = 100  # absorption length, meters
-lambda_scat = 25  # scattering length, meters
+theta_c = np.arccos(1 / n_ice)
+lambda_abs = 100  # absorption length
+lambda_scat = 25  # scattering length
 
-# --- Generate one neutrino event ---
 def generate_neutrino():
     cos_theta = np.random.uniform(-1, 0)  # upward-going (through Earth)
     phi = np.random.uniform(0, 2 * np.pi)
@@ -29,7 +26,6 @@ def generate_neutrino():
                        np.random.uniform(-450, -50)])
     return vertex, direction
 
-# --- Cherenkov photon arrival time at a DOM ---
 def cherenkov_time(vertex, direction, dom_pos, t0=0):
     """
     Closest approach geometry for a muon track.
@@ -44,15 +40,12 @@ def cherenkov_time(vertex, direction, dom_pos, t0=0):
     t_arrive = t_emit + d_photon / c_ice
     return t_arrive, d_photon
 
-# --- Simulate hits ---
 def simulate_event(vertex, direction):
     hits = []
     for dom in dom_positions:
         t_arr, d = cherenkov_time(vertex, direction, dom)
-        # Survival probability (absorption)
-        p_survive = np.exp(-d / lambda_abs) * 0.25  # 25% QE
+        p_survive = np.exp(-d / lambda_abs) * 0.25
         if np.random.rand() < p_survive:
-            # Add timing smear (~5 ns resolution)
             t_measured = t_arr + np.random.normal(0, 5e-9)
             hits.append({'dom': dom, 't': t_measured})
     return hits
@@ -71,7 +64,6 @@ for _ in range(n_events):
     zenith = np.degrees(np.arccos(direction[2]))
     results.append({'n_hits': len(hits), 'zenith': zenith})
 
-# Convert to arrays for plotting
 n_hits_arr = np.array([r['n_hits'] for r in results])
 zeniths_arr = np.array([r['zenith'] for r in results])
 
