@@ -1,0 +1,3 @@
+[submodule "icetray"]
+	path = icetray
+	url = https://github.com/icecube/icetray-public.git
